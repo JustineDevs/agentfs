@@ -1,404 +1,738 @@
 # AgentFS Concept
 
 > [!IMPORTANT]
-> This document is the conceptual source of truth for AgentFS. It is intentionally broader and deeper than the README because it defines the problem model, vocabulary, trust model, and product philosophy that future implementation must preserve.
+> This document is the full conceptual and philosophical source of truth for AgentFS. It exists to explain the project at the deepest product-and-systems level: the problem, the story, the mission, the conceptual model, the architecture mindset, the trust model, and the long-term meaning of the project.
 
 > [!NOTE]
-> The repository is still documentation-first. This file describes the intended system and its reasoning model, not a claim that every described subsystem is already implemented in the current checkout.
+> AgentFS is still documentation-first in this repository. This file describes the intended system, the logic behind it, and the worldview it encodes. It should be read as a design manifesto and technical concept document, not as proof that every described subsystem already exists in this checkout.
 
-## Executive Summary
+---
 
-AgentFS is a local-first system file and runtime model for AI-native repositories.
+## 1. The Story
 
-Its core claim is simple:
+Software repositories used to contain code, tests, docs, and build logic for humans.
 
-> repository AI context should behave like infrastructure, not scattered prose
+That assumption is no longer true.
 
-Today, most AI-assisted repositories accumulate a mix of:
+Today, repositories are increasingly shared between:
 
-- instruction markdown
-- vendor-specific configuration files
-- ad hoc prompt artifacts
-- scratch memory files
-- implicit workflow state hidden across tools
+- human developers
+- IDE copilots
+- autonomous terminal agents
+- internal automation loops
+- future multi-agent systems
 
-AgentFS replaces that fragmentation with one project-native semantic store, typically `.agent.db`, plus a runtime that can answer a much better question than "what text files exist here?"
+The problem is that the repository model has not adapted.
 
-It answers:
+Instead of gaining one coherent system for machine-facing repository state, we got a fragmented ecosystem of:
 
-- what policy applies at this directory?
-- what memory is relevant right now?
-- what hooks are trusted?
-- what can an agent read?
-- what can an agent write?
-- what should Git do when this project state changes?
+- `.cursorrules`
+- `AGENTS.md`
+- `copilot-instructions.md`
+- hidden config folders
+- ad hoc prompt documents
+- temporary machine memory files
+- vendor-specific runtime traces
 
-## The Core Problem
+Every tool adds its own file. Every team invents its own conventions. Every repository becomes more cluttered, more ambiguous, and harder to trust.
 
-The current AI tooling ecosystem treats repository context as a file-distribution problem. AgentFS treats it as a systems-design problem.
+AgentFS starts with a refusal:
 
-### The current default model
+> AI repository infrastructure should not live as uncontrolled text clutter.
 
-In most codebases, AI behavior emerges from a loose stack of text files:
+That is the story of the project.
 
-- root-level instruction files
-- nested folder notes
-- editor-specific config
-- runtime-specific caches
-- human-authored policies mixed with machine-authored memory
+---
 
-That approach is easy to start with, but structurally weak once the repository grows.
+## 2. The Core Problem
 
-| Failure Mode | What Happens | Why It Matters |
+The current AI tooling ecosystem treats repository intelligence like a documentation problem.
+
+AgentFS treats it like an infrastructure problem.
+
+### The old model
+
+The common pattern looks like this:
+
+```text
+repo/
+├── .cursorrules
+├── AGENTS.md
+├── copilot-instructions.md
+├── prompts/
+│   ├── backend.md
+│   └── frontend.md
+└── code/
+```
+
+That is convenient for a week and structurally weak forever.
+
+### Failure matrix
+
+| Failure | What Happens | Why It Becomes Serious |
 | --- | --- | --- |
-| Root clutter | Policy and machine state leak into the visible repo surface | Developers lose a clean mental model of the project |
-| Prompt bloat | Large files get repeatedly re-read or injected into context windows | Cost rises and signal quality falls |
-| Merge friction | Human and tool edits collide in normal Git workflows | Team adoption becomes painful |
-| Trust ambiguity | Hooks, policy, and memory share the same edit surface | Agents can drift toward unsafe authority |
-| State fragmentation | No single canonical source exists for context | Different tools see different truths |
+| Root clutter | Human-facing repository structure becomes polluted by machine-facing control files | Developers lose a clean operational mental model |
+| Prompt bloat | Large instructions are repeatedly re-read or injected | LLM usage becomes expensive and less precise |
+| Merge friction | Multiple humans and tools edit text files | Branch reconciliation becomes noisy and failure-prone |
+| Drift of authority | Rules, hooks, notes, and memory live in the same surface | Unsafe mutation paths become plausible |
+| Tool fragmentation | Every tool defines a different truth surface | Agents and editors stop agreeing on the same project state |
 
-### The real systems problem
+### The deeper issue
 
-The deeper issue is not "too many files." The deeper issue is that repository intelligence has no durable operating surface.
+The real issue is not just that there are too many files.
 
-Without a shared substrate:
+The real issue is that repositories lack a canonical semantic operating layer for AI participation.
 
-- every tool reinvents scope rules
-- every editor invents its own config path
-- every agent stores memory differently
-- every team rebuilds policy enforcement from scratch
+Without that:
 
-AgentFS exists to define that missing substrate.
+- policies are weakly governed
+- runtime memory is weakly bounded
+- Git integration is accidental
+- human review is degraded
+- agents cannot share state safely
 
-## The Core Thesis
+---
 
-AgentFS is based on five linked ideas.
+## 3. The Mission
 
-| Thesis | Meaning |
+AgentFS exists to establish a standard, local-first semantic substrate for AI-native repositories.
+
+### Mission statement
+
+AgentFS is meant to provide:
+
+- one canonical repository-local semantic store
+- one scope-aware context runtime
+- one explicit trust boundary between human-owned policy and agent-owned state
+- one Git-native lifecycle model
+- one migration path away from file sprawl
+
+### Mission outcomes
+
+| Outcome | Meaning |
 | --- | --- |
-| Context is structured data | Repository intelligence should be queryable, not just readable |
-| Scope matters | The active directory must influence what context is returned |
-| Policy and memory are different | Human-owned rules and agent-owned runtime state need different authority boundaries |
-| Git is part of the runtime | Merge, diff, checkout, and commit behavior must be designed into the system |
-| Local-first is the default | Privacy, speed, and trust improve when the canonical store lives with the repository |
+| Cleaner repositories | Fewer machine-clutter files in the working tree |
+| Better prompt efficiency | Only relevant local rules and memory are returned |
+| Safer agent behavior | Policy stays human-owned and reviewable |
+| Better collaboration | Shared semantic state can be merged and audited |
+| Better durability | AI context becomes infrastructure instead of ad hoc prose |
 
-## What AgentFS Actually Is
+---
 
-At the center of AgentFS is one hidden file, expected to start as:
+## 4. The Core Idea
+
+At the heart of AgentFS is one hidden project file:
 
 ```text
 .agent.db
 ```
 
-That file is not just a database in the generic sense. It is intended to act as a repository semantic spine.
+This file is not meant to be "just another config file."
 
-### It stores
+It is intended to behave more like:
 
-- directory-scoped rules
-- reusable skills or task definitions
-- lifecycle hooks
-- runtime memory
-- event logs
-- signatures and authority metadata
-- future rollback snapshots
+- an embedded local semantic store
+- a repository-native runtime surface
+- a virtual filesystem substrate
+- a policy and memory control plane
 
-### It enables
+### What that single file should hold
 
-- path-aware context retrieval
-- single-source-of-truth policy
-- controlled multi-agent state sharing
-- Git-aware merge and diff behavior
-- export or reflection for human inspection
+| Category | Purpose |
+| --- | --- |
+| Rules | Human-authored policy and repository guidance |
+| Skills | Structured workflows and reusable operational patterns |
+| Hooks | Trusted lifecycle commands and gate logic |
+| Memory | Agent-readable and agent-writable local state |
+| Logs | Runtime events and machine-observable history |
+| Signatures | Authority and protected-write verification |
+| Snapshots | Rollback and time-travel state in future phases |
 
-### It replaces
+### What that single file should eliminate
 
-- scattered AI instruction files
-- duplicated repository policy fragments
-- poorly governed local memory sprawl
-- ambiguous "which file is authoritative?" workflows
+- duplicated root instructions
+- conflicting tool-specific config files
+- uncontrolled machine memory artifacts
+- unclear policy ownership
 
-## Mental Model
+---
 
-AgentFS is easiest to understand as the overlap of four familiar systems:
-
-| System | What AgentFS borrows | What AgentFS changes |
-| --- | --- | --- |
-| SQLite | Single-file structured storage | Adds repository semantics, scope, and authority layers |
-| Git | Local-first truth and change management | Extends lifecycle behavior for AI state |
-| Filesystems | Hierarchy and path inheritance | Uses path as a semantic routing key |
-| Vector stores | Retrieval for relevant memory | Keeps retrieval local, bounded, and subordinate to policy |
-
-That combination is important. AgentFS is not trying to become "just another config file" or "just another database." It is intentionally a repository operating layer for AI context.
-
-## Why a Single File Matters
+## 5. Why the Single File Matters
 
 > [!TIP]
-> The single-file model is not about novelty. It is about reducing ambiguity, surfacing one source of truth, and making runtime behavior deterministic.
+> The single-file idea matters because it reduces ambiguity and centralizes control, not because "single file" is fashionable.
 
-The single-file design solves several problems at once.
+### Single-file benefits
 
-| Benefit | Outcome |
+| Benefit | Why It Matters |
 | --- | --- |
-| One canonical store | Humans and tools stop competing over which file is authoritative |
-| Better scoping | Runtime can return only relevant rules for the current directory |
-| Better Git integration | One state surface can be given explicit merge/diff behavior |
-| Better privacy | Local-first operation avoids mandatory remote context services |
-| Better system reasoning | Policy, memory, and lifecycle can be modeled together rather than bolted on independently |
+| One source of truth | Humans and tools stop competing over authority |
+| Better scoping | Retrieval becomes local and selective |
+| Better Git handling | One critical state object can get explicit lifecycle behavior |
+| Better privacy | Core workflows stay local by default |
+| Better reasoning | Rules, memory, hooks, and authority can be modeled together |
 
-## The Semantic Architecture
+### Conceptual view
 
-The most important design property of AgentFS is that it is semantic by structure, not by branding.
+```text
+Monorepo Root/
+├── Folder-1/
+├── Folder-2/
+└── .agent.db
+```
 
-### 1. Scope is first-class
+That structure says something important:
 
-Every record lives in a scope:
+the repository tree remains human-centric while the machine-facing semantic substrate stays unified and hidden.
 
-- `global`
-- `/apps/web`
-- `/crates/afs-core`
-- `/docs`
+---
 
-That means the runtime can answer:
+## 6. AgentFS as a Semantic Filesystem
 
-- what rules apply here?
-- what rules are inherited?
-- what should override what?
+AgentFS is conceptually much closer to:
 
-This is significantly better than loading a giant instruction blob and hoping the model infers the right local behavior.
+- SQLite
+- DuckDB
+- Git bare-object storage
+- Docker image layer structures
+- local virtual filesystems
 
-### 2. Category is first-class
+than to a plain markdown instruction file.
 
-A rule is not the same thing as memory.
+### Internal conceptual shape
 
-A hook is not the same thing as a skill.
+```text
+.agent.db
+├── rules/
+│   ├── global
+│   ├── /apps/web
+│   └── /crates/afs-core
+├── skills/
+│   ├── git/
+│   ├── build/
+│   └── deploy/
+├── hooks/
+│   ├── pre-commit
+│   ├── post-test
+│   └── pre-push
+├── memory/
+│   ├── /apps/web
+│   └── /docs
+└── logs/
+```
 
-A log is not the same thing as a protected policy record.
+### Conceptual addressing syntax
 
-That categorical separation matters because it enables:
+Future internal or adapter-facing path syntax may look like:
 
-- clearer retrieval
-- better auditability
-- safer writes
-- more accurate export and diff behavior
+```text
+ai://rules/syntax
+ai://state/memory
+ai://skills/git/commit
+ai://hooks/pre-commit
+```
 
-### 3. Authority is first-class
+This matters because it lets the system think semantically rather than only as raw files and strings.
 
-Not every piece of data should have the same mutability.
+---
 
-| Category Type | Typical Writer | Risk if Ungoverned |
-| --- | --- | --- |
-| Policy / rules | Human | Agents may rewrite repository standards |
-| Hooks | Human | Agents may escalate into execution control |
-| Memory | Agent | Usually acceptable if bounded and inspectable |
-| Logs | Agent / runtime | Can leak sensitive or misleading context if unmanaged |
+## 7. The Philosophy
 
-This is the conceptual foundation for the dual-domain model described below.
+AgentFS is built on a set of philosophy-level commitments.
 
-## The Dual-Domain Trust Model
-
-> [!WARNING]
-> If AgentFS gets this boundary wrong, the entire product becomes unsafe. The project is only credible if human authority and agent mutability stay clearly separated.
-
-AgentFS divides the system into two logical domains.
-
-| Domain | Default Authority | Typical Contents | Required Safety Property |
-| --- | --- | --- | --- |
-| User Domain | Human-controlled | Rules, protected hooks, signed policy, critical defaults | Agents must not silently rewrite it |
-| Agent Domain | Agent-readable and agent-writable | Memory, logs, summaries, observations, transient state | Writes must not escalate into policy ownership |
-
-This is not just a security preference. It is a product identity constraint.
-
-Without it:
-
-- "memory" turns into policy drift
-- "automation" turns into silent privilege escalation
-- "local state" turns into unreviewed execution control
-
-With it:
-
-- humans keep authority over the repository's normative behavior
-- agents gain useful runtime memory without controlling protected execution paths
-
-## Why Git Must Be Part of the Design
-
-Most AI context systems ignore Git and hope the problem goes away.
-
-AgentFS cannot do that because the project file is part of repository state. Once that is true, Git lifecycle behavior becomes a product feature, not an afterthought.
-
-| Git Action | Why AgentFS Cares |
+| Principle | Meaning |
 | --- | --- |
-| `git add` | Staging may need normalization or filtering |
-| `git checkout` / `git switch` | Local projections or generated compatibility views may need refresh |
-| `git diff` / `git show` | Binary-backed state still needs readable review surfaces |
-| `git merge` / `git pull` / `git rebase` | Shared state needs deterministic reconciliation |
-| `git commit` | Repository policy may need local validation |
-| `git push` | Secret and policy leakage checks may matter |
+| Infrastructure over prose | Context should be queryable and structured, not just written down |
+| Local-first by default | Core repository intelligence should not require a remote control plane |
+| Human-owned policy | Protected rules and hooks must remain under deliberate human authority |
+| Scope-first retrieval | The active path should determine what context is actually loaded |
+| Reflection for humans | Binary-backed state must remain inspectable and explainable |
+| Bounded machine state | Memory must stay useful without becoming uncontrolled clutter |
+| Honest surfaces | Docs and release claims must match actual implementation status |
 
-This is why AgentFS is designed with:
+### What that philosophy rejects
 
-- clean filters
-- smudge filters
-- merge drivers
-- diff exporters
-- hooks
+AgentFS rejects:
 
-Git is not adjacent to AgentFS. Git is part of the execution surface.
+- vague machine-state ownership
+- uncontrolled prompt sprawl
+- hidden authority escalation
+- black-box repository mutation
+- cloud-dependence as the default operating model
 
-## Why Local-First Matters
+---
 
-Local-first design is not only about privacy. It also affects correctness, latency, and trust.
+## 8. Mission-Level Differentiation
 
-| Dimension | Local-First Advantage |
+AgentFS is not trying to be:
+
+- a chat product
+- a hosted AI memory service
+- just another prompt-file convention
+- just SQLite placed in a repository
+
+It is trying to be:
+
+- a repository-native semantic operating layer
+- a trust model for AI participation
+- a Git-aware state substrate
+- a portable standard for AI-native repository structure
+
+### Identity table
+
+| AgentFS is | AgentFS is not |
 | --- | --- |
-| Privacy | Project policy and memory stay on the developer machine by default |
-| Speed | Context can be read from local storage or mapped memory |
-| Reliability | Core workflows do not require a hosted control plane |
-| Trust | Teams can audit one local repository state model instead of opaque remote behavior |
-| Portability | The repository carries its AI substrate with it |
+| a semantic runtime substrate | a generic prompt folder |
+| a local-first systems layer | a cloud-only context service |
+| a policy-plus-memory model | an uncontrolled scratchpad |
+| a Git-aware infrastructure layer | a Git replacement |
 
-Remote or shared distribution may still exist later, but it should extend the local model, not replace it.
+---
 
-## How AgentFS Differs From Plain Text Instruction Files
+## 9. Local-First as a Product Belief
 
-| Plain Text Model | AgentFS Model |
+Local-first design is not an implementation convenience. It is part of the project’s identity.
+
+### Why local-first matters
+
+| Dimension | Why Local Wins |
 | --- | --- |
-| Entire files are re-read repeatedly | Scope-aware records can be selectively returned |
-| Human and machine state often mix together | Categories and authority can be separated |
-| Git treats changes as ordinary text diffs | Git behavior can be explicitly designed for the project file |
-| Each tool invents its own path convention | One project-native store can serve multiple tools |
-| Memory grows as clutter | Memory can be bounded, structured, exported, and governed |
+| Privacy | Context and memory remain on the developer machine by default |
+| Speed | Reads can be served from local storage and mapped pages |
+| Reliability | Core workflows do not depend on a hosted service staying up |
+| Trust | Teams can reason about one local repository state model |
+| Portability | The semantic substrate moves with the repo |
 
-## How AgentFS Differs From a Generic Database
+### Architecture modes
 
-AgentFS is not only "SQLite in the root."
+Even if the system later supports:
 
-What makes it distinct is the repository-aware behavior layered on top:
+- object storage distribution
+- signed policy remotes
+- peer sync
 
-- scope inheritance
-- policy versus memory separation
-- Git lifecycle integration
-- compatibility export or reflection
-- future semantic retrieval tied to repository paths
+the base assumption remains:
 
-A generic database can store the bytes. AgentFS defines what the bytes mean inside a working repository.
+> the local repository is the primary execution environment
 
-## Human View vs Machine View
+---
 
-The same system must satisfy two different operating perspectives.
+## 10. Memory Mapping and the Performance Story
 
-### Human view
+The original technical direction strongly assumes OS-level memory mapping (`mmap`).
 
-Humans need:
+### Why `mmap` matters
 
-- clarity
+Instead of repeatedly opening and parsing text files, the runtime asks the operating system to map the project file into memory.
+
+### Benefit table
+
+| Property | Intended Outcome |
+| --- | --- |
+| Zero-parse access | Retrieval avoids repeated syntax parsing |
+| On-demand paging | Only active parts of the file are loaded |
+| Better locality | Scope-aware access stays cheap |
+| Low idle overhead | No need for constant background parsing |
+
+### CPU philosophy
+
+AgentFS should behave like a well-designed local system utility:
+
+- when nothing is happening, it sleeps
+- when a single lookup happens, it wakes briefly
+- when a command finishes, it exits or returns to a passive state
+
+That is how the project preserves the “0% idle CPU” vision.
+
+---
+
+## 11. Scope as a First-Class Primitive
+
+Path is not metadata in AgentFS. Path is a routing mechanism.
+
+### Scope examples
+
+```text
+global
+/apps/web
+/crates/afs-core
+/docs
+```
+
+### Questions scope must answer
+
+| Question | Why It Matters |
+| --- | --- |
+| What applies here? | local rules should be selective |
+| What is inherited? | global defaults still matter |
+| What overrides what? | nested context needs deterministic behavior |
+| What memory is relevant? | retrieval must not become globally noisy |
+
+### Scope-resolution diagram
+
+```text
+current path
+   │
+   ▼
+/apps/web/components
+   │
+   ├── inherits from /apps/web
+   ├── inherits from /apps
+   └── inherits from global
+```
+
+Scope is one of the main reasons AgentFS is semantically stronger than a pile of prompt files.
+
+---
+
+## 12. Symbolic + Semantic Dual-Engine Design
+
+AgentFS is not only a relational storage idea. It is a dual-engine concept.
+
+### Two layers
+
+| Layer | Responsibility |
+| --- | --- |
+| Relational / symbolic | explicit rules, commands, hooks, scopes, protected policy |
+| Semantic / retrieval | memory search, compressed embeddings, future context ranking |
+
+### Why both are needed
+
+Without symbolic structure:
+
+- authority becomes ambiguous
+- hooks become hard to reason about
+- policy becomes fragile
+
+Without semantic retrieval:
+
+- memory becomes hard to search intelligently
+- local history becomes too expensive or too noisy to reuse
+
+### Update flow
+
+```text
+human updates policy
+      │
+      ▼
+symbolic record changes
+      │
+      ▼
+semantic index refreshes if necessary
+      │
+      ▼
+future retrieval sees both explicit policy and relevant memory
+```
+
+---
+
+## 13. Human View vs Machine View
+
+A core design challenge is that the same repository state must satisfy both humans and machines.
+
+### Human needs
+
 - inspectability
-- reviewable diffs
-- honest docs
-- understandable authority boundaries
+- understandable ownership
+- readable diffs
+- trustworthy diagnostics
+- clear documentation
 
-### Machine view
-
-Agents need:
+### Machine needs
 
 - scoped retrieval
 - structured categories
 - cheap reads
 - bounded writes
-- stable APIs and command contracts
+- stable semantics
 
-| View | What It Optimizes For | Failure If Ignored |
+### Comparison
+
+| View | Optimizes For | Failure If Ignored |
 | --- | --- | --- |
-| Human | Trust, reviewability, governance | The project becomes a black box |
-| Machine | Precision, speed, relevance | Context retrieval becomes noisy and expensive |
+| Human | trust, governance, review | the system becomes a black box |
+| Machine | speed, precision, relevance | context becomes expensive and noisy |
 
-AgentFS succeeds only if it preserves both views without creating separate truths for each.
+The project only works if both views can coexist without splitting into two competing truths.
 
-## The Reflection Principle
+---
 
-> [!NOTE]
-> A binary-backed system that cannot explain itself to humans will be rejected, even if it is technically sound.
+## 14. Reflection as a Non-Negotiable Principle
 
-That is why AgentFS includes the idea of reflection surfaces:
+> [!WARNING]
+> A binary-backed system that cannot explain itself to humans will be rejected even if it is technically elegant.
 
-- markdown export
-- structured JSON export
-- readable diff conversion
-- optional virtual filesystem projection
+That is why AgentFS includes the reflection principle.
 
-These are not secondary conveniences. They are how a binary semantic store stays governable in a Git-native world.
+### Reflection surfaces
 
-## The Runtime Story
-
-The full implementation is still ahead, but conceptually the runtime behaves like this:
-
-1. agent or tool enters a repository scope
-2. runtime resolves current path and inherited scopes
-3. runtime loads applicable rules, hooks, and memory categories
-4. protected records stay under human authority constraints
-5. runtime returns only the context needed for the current task
-6. agent writes memory or logs only into allowed mutable domains
-7. Git lifecycle events reconcile project state through explicit integrations
-
-## The Product Story
-
-AgentFS is not trying to be "an AI assistant."
-It is trying to be the repository substrate that AI assistants can share.
-
-That distinction matters.
-
-| AgentFS is | AgentFS is not |
+| Surface | Purpose |
 | --- | --- |
-| a repository context layer | a proprietary chat product |
-| a local-first semantic store | a cloud-only memory service |
-| a trust-boundary model | a generic prompt file collection |
-| a Git-aware state system | an ungoverned agent scratchpad |
+| Markdown export | human-readable inspection |
+| JSON export | machine-readable inspection |
+| Diff export | Git review of binary-backed changes |
+| Virtual projection | read-only human view without polluting the repo |
 
-## The Adoption Story
+### Example reflection path
 
-A real system has to meet teams where they are.
+```text
+.afs/virtual/
+├── rules/
+├── hooks/
+├── memory/
+└── logs/
+```
 
-That means AgentFS cannot assume a greenfield world. It must support migration from existing repository patterns such as:
+Reflection is not a side feature. It is how a binary semantic system stays socially and operationally usable.
+
+---
+
+## 15. The Trust Model
+
+The most important conceptual boundary in AgentFS is the split between protected and mutable state.
+
+### Dual-domain model
+
+| Domain | Default Authority | Typical Contents | Hard Rule |
+| --- | --- | --- | --- |
+| User Domain | Human-controlled | rules, protected hooks, signed policy, defaults | agents must not silently rewrite it |
+| Agent Domain | Agent read/write | memory, logs, summaries, observations | writes must not escalate into policy ownership |
+
+### Why this boundary exists
+
+Without it:
+
+- memory turns into policy drift
+- hooks become escalation surfaces
+- automation can silently rewrite execution logic
+
+With it:
+
+- humans keep normative authority
+- agents still gain useful runtime memory
+- governance becomes possible
+
+---
+
+## 16. The Security Philosophy
+
+AgentFS is not merely trying to be efficient. It is trying to be governable.
+
+### Security goals
+
+| Goal | Meaning |
+| --- | --- |
+| Human-owned hooks | agents should not freely mutate shell targets |
+| Signature-gated protected updates | protected writes should carry human proof |
+| Auditable merge behavior | `.agent.db` reconciliation must stay inspectable |
+| Safe reflection | readable surfaces must not undermine trust boundaries |
+| Bounded mutable state | memory must not become unbounded control drift |
+
+### Signature strategy
+
+Protected writes should eventually support:
+
+- SSH-backed verification
+- GPG-backed verification
+- enterprise signed policy deltas
+
+This is one of the project’s defining security ideas.
+
+---
+
+## 17. Why Git Is Part of the Product
+
+Git is not adjacent to AgentFS.
+Git is one of the product surfaces.
+
+### Git lifecycle significance
+
+| Git Action | Why It Matters |
+| --- | --- |
+| `git add` | staging may require normalization or filtering |
+| `git checkout` / `git switch` | local compatibility or reflection state may need refresh |
+| `git diff` / `git show` | binary-backed state still needs readable review |
+| `git merge` / `git pull` / `git rebase` | semantic state must reconcile predictably |
+| `git commit` | local validation and policy checks may need to run |
+| `git push` | leak checks and trust verification may matter |
+
+### Git architecture mindset
+
+If `.agent.db` is part of repo state, then merge drivers, filters, hooks, and diff export are not optional extras. They are part of the operating model.
+
+---
+
+## 18. Migration Philosophy
+
+AgentFS cannot assume greenfield adoption.
+
+It must meet teams where they are.
+
+### Existing ecosystem reality
+
+Teams already have:
 
 - `.cursorrules`
 - `AGENTS.md`
-- vendor-specific instruction files
-- ad hoc local prompt folders
+- `copilot-instructions.md`
+- custom prompt folders
+- editor-specific control files
 
-The conceptual requirement is:
+### Migration principle
 
-> preserve useful policy, remove duplicated clutter, and converge on one canonical store
+> preserve useful policy, remove duplication, and converge on one canonical store
 
-That is why ingestion and compatibility layers are part of the concept rather than optional extras.
+### Ingest lifecycle
 
-## The Long-Term Vision
+```text
+scan existing AI files
+       │
+       ▼
+parse and map to scopes
+       │
+       ▼
+write canonical records into .agent.db
+       │
+       ▼
+optionally remove duplicates
+       │
+       ▼
+activate compatibility or reflection surfaces if needed
+```
 
-If AgentFS succeeds, the outcome is larger than one repository.
+Migration is part of the concept because no standard becomes real unless existing teams can adopt it without losing their work.
 
-It would establish a credible open model for AI-native repositories where:
+---
 
-- context has structure
-- policy has ownership
-- memory has boundaries
-- Git has first-class integration
-- tools can share one substrate instead of inventing their own
+## 19. The Release Vision
 
-That would shift repository AI from a vendor-specific clutter pattern into durable infrastructure.
+The original project idea also implies a release-level story.
 
-## Design Principles
+### v0.1.0 conceptual bundle
 
-| Principle | Practical Meaning |
+| Component | Intended Role |
 | --- | --- |
-| One source of truth | Do not let multiple instruction surfaces compete silently |
-| Honest surfaces | Docs and status must not overclaim implementation |
-| Scope-first retrieval | Return local relevance, not global noise |
-| Human-owned policy | Protected behavior stays under deliberate control |
-| Bounded agent writes | Memory must remain useful without becoming unsafe |
-| Git-native behavior | Reconciliation and review must fit normal repository workflows |
-| Inspectable state | Humans need exports, diffs, and visibility |
+| `afs-core` | local native runtime and semantic storage engine |
+| `.agent.db` schema | canonical repository state structure |
+| Git integration package | merge driver, diff export, hooks, filters |
+| reflection layer | human-readable virtual or exported views |
 
-## Final Definition
+### Why that matters
 
-AgentFS is a repository-native semantic runtime that consolidates AI policy, memory, hooks, and lifecycle state into a local-first system file with explicit scope, Git integration, and human-versus-agent authority boundaries.
+The first meaningful release is not just “a binary.”
+It is the first end-to-end proof that:
+
+- the semantic store works
+- Git workflows work
+- humans can inspect the state
+- the trust boundary holds
+
+---
+
+## 20. Industry Impact Vision
+
+If AgentFS succeeds, its impact is larger than one repository.
+
+### Potential shifts
+
+| Shift | Meaning |
+| --- | --- |
+| Standardized AI-native repo substrate | tools can stop inventing competing file conventions |
+| Cleaner enterprise adoption | security teams audit one governed state surface |
+| More decentralized developer power | local-first infrastructure reduces dependency on hosted context systems |
+
+### Economic impact logic
+
+| Cost Today | AgentFS Target |
+| --- | --- |
+| high token waste | scoped retrieval reduces irrelevant prompt volume |
+| manual merge cleanup | semantic merge flows reduce friction |
+| noisy background processing | event-driven local runtime lowers idle cost |
+| duplicated policy maintenance | one canonical source lowers operational waste |
+
+---
+
+## 21. Cross-Platform and Universal Agent Compatibility
+
+AgentFS is intended to be portable across both tools and operating systems.
+
+### Agent compatibility
+
+| Consumer | Fit |
+| --- | --- |
+| IDE copilots | can use scoped repository context |
+| terminal coding agents | can query path-local rules quickly |
+| multi-agent frameworks | can share local semantic state |
+| future systems | can consume the store if they understand the semantic contract |
+
+### Platform compatibility
+
+```text
+                 AgentFS Native Runtime
+                        │
+      ┌─────────────────┼─────────────────┐
+      ▼                 ▼                 ▼
+    macOS            Windows            Linux
+   FSEvents          Win32 APIs         inotify
+   POSIX mmap        file mapping       mmap
+```
+
+The project’s ambition is to become infrastructure, not just a niche tool integration.
+
+---
+
+## 22. Operational Philosophy
+
+The system should feel like a serious local utility:
+
+- quiet when idle
+- fast when invoked
+- explicit in ownership
+- inspectable in output
+- unsurprising in Git workflows
+
+### Practical behavioral rules
+
+| Rule | Why |
+| --- | --- |
+| no aggressive polling loops | preserve battery and CPU |
+| use event-driven wakeups | align with OS scheduling |
+| keep caches bounded | avoid memory blow-up |
+| preserve human reviewability | prevent black-box failure modes |
+
+---
+
+## 23. Concept Diagram: Human and Machine Coexistence
+
+```text
+             ┌──────────────────────────────────────┐
+             │          Human Repository View       │
+             │   code / docs / tests / build files  │
+             └────────────────┬─────────────────────┘
+                              │
+                              ▼
+                    ┌──────────────────────┐
+                    │      .agent.db       │
+                    │ rules / skills /     │
+                    │ hooks / memory /     │
+                    │ logs / signatures    │
+                    └──────────┬───────────┘
+                               │
+          ┌────────────────────┼────────────────────┐
+          ▼                    ▼                    ▼
+   Scoped retrieval       Git lifecycle        Reflection layer
+   for agents/tools       integration           for humans
+```
+
+This is the essence of AgentFS:
+
+one semantic core, multiple controlled surfaces, one governed truth.
+
+---
+
+## 24. Final Concept Definition
+
+AgentFS is a repository-native semantic operating layer that consolidates AI rules, memory, hooks, and lifecycle state into a local-first system file with path-aware retrieval, explicit authority boundaries, reflection for human review, and Git-integrated behavior.
 
 ## Project Identity
 
@@ -406,6 +740,7 @@ AgentFS is a repository-native semantic runtime that consolidates AI policy, mem
 | --- | --- |
 | Project | `AgentFS` |
 | CLI | `afs` |
+| Concept Scope | story, mission, concept, philosophy, trust model |
 | Author | `@Justinedevs` |
 | Email | `Justinedevs@jstn.site` |
 | Domain | `agentfs.systems` |
