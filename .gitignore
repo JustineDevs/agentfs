@@ -1,0 +1,87 @@
+# Local agent/orchestration runtime state
+.omx/
+.agents/
+.codex/
+
+# AgentFS local runtime data
+.agent.db
+.agent.db-*
+.afs/
+*.aifs
+*.agentfs
+
+# Environment and secrets
+.env
+.env.*
+!.env.example
+!.env.sample
+*.local
+
+# Logs and diagnostics
+*.log
+logs/
+tmp/
+temp/
+.cache/
+
+# OS and editor files
+.DS_Store
+Thumbs.db
+Desktop.ini
+.idea/
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+*.swp
+*.swo
+*~
+
+# Node / TypeScript / monorepo tooling
+node_modules/
+.pnpm-store/
+.npm/
+.yarn/
+.turbo/
+dist/
+build/
+coverage/
+storybook-static/
+*.tsbuildinfo
+
+# Docs/site framework outputs
+.next/
+.nuxt/
+.astro/
+.svelte-kit/
+.vercel/
+.docusaurus/
+
+# Rust
+target/
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyd
+*.so
+.python-version
+.venv/
+venv/
+env/
+.mypy_cache/
+.pytest_cache/
+.ruff_cache/
+.tox/
+.nox/
+
+# SQLite and local database sidecars
+*.db-shm
+*.db-wal
+*.sqlite-shm
+*.sqlite-wal
+
+# Archives and packaged artifacts
+*.tgz
+*.gz
+*.zip
+*.tar
