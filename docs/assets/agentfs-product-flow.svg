@@ -1,104 +1,176 @@
-<svg width="900" height="460" viewBox="0 0 900 460" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="title desc">
-  <title id="title">AgentFS product flow</title>
-  <desc id="desc">AgentFS connects a user's repository, the afs runtime, the .agent.db store, and an AI agent through a pruned context flow.</desc>
+<svg width="960" height="540" viewBox="0 0 960 540" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="title desc">
+  <title id="title">AgentFS Product Flow</title>
+  <desc id="desc">Product architecture diagram showing how a repository connects to the afs runtime, the .agent.db store, a visible trust boundary, and an AI agent workflow.</desc>
+
+  <defs>
+    <linearGradient id="canvas" x1="0" x2="960" y1="0" y2="540" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#f8fafc"/>
+      <stop offset="0.5" stop-color="#ffffff"/>
+      <stop offset="1" stop-color="#f0fdfa"/>
+    </linearGradient>
+    <linearGradient id="userPanel" x1="36" x2="476" y1="110" y2="500" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#f0f6ff"/>
+      <stop offset="1" stop-color="#f8fafc"/>
+    </linearGradient>
+    <linearGradient id="agentPanel" x1="604" x2="924" y1="110" y2="500" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#ecfdf5"/>
+      <stop offset="1" stop-color="#f8fafc"/>
+    </linearGradient>
+    <linearGradient id="runtimeCard" x1="0" x2="190" y1="0" y2="126" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#fff7ed"/>
+      <stop offset="1" stop-color="#ffffff"/>
+    </linearGradient>
+    <linearGradient id="dbCard" x1="0" x2="240" y1="0" y2="96" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#f5f3ff"/>
+      <stop offset="1" stop-color="#ffffff"/>
+    </linearGradient>
+    <linearGradient id="agentCard" x1="0" x2="200" y1="0" y2="126" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#f0fdf4"/>
+      <stop offset="1" stop-color="#ffffff"/>
+    </linearGradient>
+    <filter id="shadow" x="-12%" y="-12%" width="132%" height="134%">
+      <feDropShadow dx="0" dy="8" stdDeviation="10" flood-color="#0f172a" flood-opacity="0.07"/>
+    </filter>
+    <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="4" stdDeviation="7" flood-color="#22c55e" flood-opacity="0.18"/>
+    </filter>
+  </defs>
+
   <style>
-    .panel { fill: #f8fafc; stroke: #dbe3ee; stroke-width: 2; }
-    .card { fill: #ffffff; stroke: #cbd5e1; stroke-width: 1.5; }
-    .card-purple { fill: #faf5ff; stroke: #d8b4fe; stroke-width: 2; }
-    .card-green { fill: #f0fdf4; stroke: #bbf7d0; stroke-width: 2; }
-    .boundary { stroke: #ef4444; stroke-width: 3; stroke-dasharray: 7 7; }
-    .flow-track { stroke: #e2e8f0; stroke-width: 5; stroke-linecap: round; stroke-linejoin: round; }
-    .flow-line { stroke: #6366f1; stroke-width: 5; stroke-linecap: round; stroke-linejoin: round; stroke-dasharray: 12 14; animation: agentfs-flow 1.25s linear infinite; }
-    .ingest-line { stroke: #a855f7; stroke-width: 2.5; stroke-linecap: round; stroke-dasharray: 5 6; }
-    .index-line { stroke: #4f46e5; stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; }
-    .pulse { animation: agentfs-pulse 3s ease-in-out infinite; }
-    .font { font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
-    .title { font-size: 14px; font-weight: 750; fill: #0f172a; }
-    .sub { font-size: 11px; font-weight: 520; fill: #64748b; }
-    .tiny { font-size: 10px; font-weight: 700; fill: #475569; }
-    .tag { font-size: 10px; font-weight: 800; fill: #ffffff; letter-spacing: .2px; }
-    .metric { font-size: 10px; font-weight: 800; fill: #166534; }
-    @keyframes agentfs-flow { to { stroke-dashoffset: -26; } }
-    @keyframes agentfs-pulse {
-      0%, 100% { fill: #f8fafc; stroke: #cbd5e1; }
-      50% { fill: #ecfdf5; stroke: #86efac; }
+    .font { font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+    .eyebrow { font-size: 11px; font-weight: 800; letter-spacing: .15em; fill: #64748b; }
+    .heading { font-size: 20px; font-weight: 800; fill: #0f172a; }
+    .title { font-size: 14px; font-weight: 800; fill: #0f172a; }
+    .sub { font-size: 12px; font-weight: 500; fill: #64748b; }
+    .micro { font-size: 10px; font-weight: 700; fill: #64748b; }
+    .pillText { font-size: 11px; font-weight: 800; fill: #ffffff; letter-spacing: .05em; }
+    .card { fill: #ffffff; stroke: #e2e8f0; stroke-width: 1.5; }
+    .card-green { fill: url(#agentCard); stroke: #a7f3d0; stroke-width: 1.5; }
+    .flowTrack { stroke: #e2e8f0; stroke-width: 5; stroke-linecap: round; stroke-linejoin: round; }
+    .flowLine { stroke: #2563eb; stroke-width: 5; stroke-linecap: round; stroke-linejoin: round; stroke-dasharray: 9 11; animation: flow-forward 1s linear infinite; }
+    .dataLine { stroke: #7c3aed; stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; stroke-dasharray: 6 6; animation: flow-forward 1.5s linear infinite; }
+    .boundaryLine { stroke: #ef4444; stroke-width: 2.5; stroke-dasharray: 6 6; }
+    .pulse-pill { animation: pulse 2.5s ease-in-out infinite; }
+    @keyframes flow-forward { to { stroke-dashoffset: -20; } }
+    @keyframes pulse {
+      0%, 100% { fill: #ffffff; stroke: #bbf7d0; }
+      50% { fill: #f0fdf4; stroke: #22c55e; }
     }
   </style>
 
-  <rect x="0" y="0" width="900" height="460" rx="24" fill="#ffffff"/>
+  <rect width="960" height="540" rx="24" fill="url(#canvas)"/>
+  <path d="M36 90C150 42 260 50 374 86C505 128 604 129 738 58C814 18 890 34 930 72" stroke="#e2e8f0" stroke-width="1.5" opacity=".7"/>
+  <path d="M36 500C180 438 318 448 456 486C610 528 752 504 924 436" stroke="#d1fae5" stroke-width="1.5" opacity=".8"/>
 
-  <rect x="24" y="26" width="496" height="408" rx="18" class="panel"/>
-  <rect x="38" y="40" width="128" height="26" rx="13" fill="#2563eb"/>
-  <text x="102" y="57" text-anchor="middle" class="font tag">USER DOMAIN</text>
+  <text x="48" y="52" class="font eyebrow">AGENTFS PRODUCT FLOW</text>
+  <text x="48" y="80" class="font heading">One repository-native system file feeds scoped context into every agent turn.</text>
 
-  <path d="M548 34V426" class="boundary"/>
-  <g transform="translate(493 214)">
-    <rect x="0" y="0" width="110" height="28" rx="14" fill="#ef4444"/>
-    <text x="55" y="18" text-anchor="middle" class="font tag">Trust Boundary</text>
-  </g>
+  <rect x="36" y="110" width="440" height="390" rx="20" fill="url(#userPanel)" stroke="#cbd5e1" stroke-width="1"/>
+  <rect x="56" y="128" width="110" height="26" rx="13" fill="#2563eb"/>
+  <text x="111" y="145" text-anchor="middle" class="font pillText">USER DOMAIN</text>
+  <text x="56" y="178" class="font sub">Human-owned source tree, policy, hooks, and local storage.</text>
 
-  <rect x="580" y="26" width="296" height="408" rx="18" class="panel"/>
-  <rect x="596" y="40" width="128" height="26" rx="13" fill="#059669"/>
-  <text x="660" y="57" text-anchor="middle" class="font tag">AGENT DOMAIN</text>
-
-  <g transform="translate(58 104)">
-    <rect x="0" y="0" width="170" height="112" rx="14" class="card"/>
-    <g transform="translate(70 22)" stroke="#2563eb" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" fill="none">
-      <path d="M28 25a3 3 0 0 1-3 3H5a3 3 0 0 1-3-3V8a3 3 0 0 1 3-3h7l3 4h10a3 3 0 0 1 3 3z"/>
+  <g transform="translate(56, 210)" filter="url(#shadow)">
+    <rect width="180" height="126" rx="16" class="card"/>
+    <rect x="16" y="16" width="40" height="40" rx="10" fill="#eff6ff"/>
+    <g transform="translate(24 24)" stroke="#2563eb" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none">
+      <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>
     </g>
-    <text x="85" y="75" text-anchor="middle" class="font title">Repository</text>
-    <text x="85" y="93" text-anchor="middle" class="font sub">source tree + Git</text>
+    <text x="18" y="84" class="font title">Repository</text>
+    <text x="18" y="104" class="font sub">source tree + Git</text>
   </g>
 
-  <g transform="translate(294 104)">
-    <rect x="0" y="0" width="178" height="112" rx="14" class="card-purple"/>
-    <g transform="translate(76 24)" stroke="#9333ea" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" fill="none">
-      <polyline points="4 18 12 10 4 2"/>
-      <line x1="16" y1="20" x2="28" y2="20"/>
+  <g transform="translate(264, 210)" filter="url(#shadow)">
+    <rect width="190" height="126" rx="16" fill="url(#runtimeCard)" stroke="#fed7aa" stroke-width="1.5"/>
+    <rect x="16" y="16" width="40" height="40" rx="10" fill="#fff7ed"/>
+    <g transform="translate(24 24)" stroke="#ea580c" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none">
+      <polyline points="4 17 10 11 4 5"/>
+      <line x1="12" y1="19" x2="20" y2="19"/>
     </g>
-    <text x="89" y="75" text-anchor="middle" class="font title">afs Runtime</text>
-    <text x="89" y="93" text-anchor="middle" class="font sub">Rust CLI engine</text>
+    <text x="18" y="84" class="font title">afs Runtime</text>
+    <text x="18" y="104" class="font sub">init, add, status, doctor</text>
   </g>
 
-  <g transform="translate(180 292)">
-    <rect x="0" y="0" width="190" height="118" rx="14" class="card"/>
-    <g transform="translate(79 20)" stroke="#4f46e5" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" fill="none">
-      <ellipse cx="17" cy="6" rx="17" ry="6"/>
-      <path d="M0 6v13c0 3.2 7.6 6 17 6s17-2.8 17-6V6"/>
-      <path d="M0 19v13c0 3.2 7.6 6 17 6s17-2.8 17-6V19"/>
+  <g transform="translate(140, 376)" filter="url(#shadow)">
+    <rect width="240" height="96" rx="16" fill="url(#dbCard)" stroke="#c7d2fe" stroke-width="1.5"/>
+    <rect x="16" y="24" width="48" height="48" rx="12" fill="#e0e7ff"/>
+    <g transform="translate(24 32)" stroke="#4f46e5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none">
+      <ellipse cx="16" cy="5" rx="16" ry="5"/>
+      <path d="M0 5v10c0 2.76 7.16 5 16 5s16-2.24 16-5V5"/>
+      <path d="M0 15v10c0 2.76 7.16 5 16 5s16-2.24 16-5V15"/>
     </g>
-    <text x="95" y="80" text-anchor="middle" class="font title">.agent.db</text>
-    <text x="95" y="98" text-anchor="middle" class="font sub">memory-mapped store</text>
+    <text x="78" y="44" class="font title">.agent.db</text>
+    <text x="78" y="64" class="font sub">memory-mapped semantic store</text>
+    <text x="78" y="80" class="font micro" fill="#6366f1">rules, hooks, memory</text>
   </g>
 
-  <path d="M228 160H294" class="ingest-line"/>
-  <text x="261" y="149" text-anchor="middle" class="font tiny">ingest</text>
-
-  <path d="M383 216V250H276V292" class="index-line"/>
-  <text x="392" y="251" class="font tiny">zero-parse index</text>
-
-  <path d="M370 352H728V250" class="flow-track"/>
-  <path d="M370 352H728V250" class="flow-line"/>
-
-  <g transform="translate(448 308)">
-    <rect x="0" y="0" width="152" height="30" rx="15" class="pulse" stroke-width="1.5"/>
-    <text x="76" y="19" text-anchor="middle" class="font metric">Pruned Context</text>
+  <g transform="translate(504, 110)">
+    <rect width="72" height="390" rx="20" fill="#fff5f5" stroke="#fecdd3" stroke-width="1"/>
+    <path d="M36 20V370" class="boundaryLine"/>
+    <g transform="translate(12, 134)" filter="url(#shadow)">
+      <rect width="48" height="140" rx="14" fill="#ef4444"/>
+      <text x="26" y="70" class="font pillText" text-anchor="middle" transform="rotate(-90 26 70)">TRUST BOUNDARY</text>
+    </g>
+    <rect x="9" y="42" width="54" height="38" rx="12" fill="#ffffff" stroke="#fecdd3" stroke-width="1"/>
+    <text x="36" y="58" text-anchor="middle" class="font micro" fill="#991b1b">signed</text>
+    <text x="36" y="72" text-anchor="middle" class="font micro" fill="#991b1b">policy</text>
+    <rect x="9" y="340" width="54" height="38" rx="12" fill="#ffffff" stroke="#fecdd3" stroke-width="1"/>
+    <text x="36" y="356" text-anchor="middle" class="font micro" fill="#991b1b">agent</text>
+    <text x="36" y="370" text-anchor="middle" class="font micro" fill="#991b1b">read path</text>
   </g>
-  <text x="525" y="374" text-anchor="middle" class="font tiny" fill="#15803d">directory-scoped rules, hooks, and memory</text>
 
-  <g transform="translate(638 130)">
+  <rect x="604" y="110" width="320" height="390" rx="20" fill="url(#agentPanel)" stroke="#a7f3d0" stroke-width="1"/>
+  <rect x="624" y="128" width="120" height="26" rx="13" fill="#059669"/>
+  <text x="684" y="145" text-anchor="middle" class="font pillText">AGENT DOMAIN</text>
+  <text x="624" y="178" class="font sub">Scoped runtime context injected into environments.</text>
+
+  <g transform="translate(672, 210)" filter="url(#shadow)">
     <rect x="0" y="0" width="184" height="120" rx="14" class="card-green"/>
     <g transform="translate(76 24)" stroke="#0284c7" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" fill="none">
       <rect x="0" y="7" width="34" height="28" rx="6"/>
-      <path d="M8 0v7M26 0v7M10 19h.01M24 19h.01M9 28h16"/>
+      <path d="M8 0v7M26 0v7M10 19h.01M24 19h.01M8 28h18"/>
     </g>
     <text x="92" y="80" text-anchor="middle" class="font title">AI Agent Turn</text>
     <text x="92" y="98" text-anchor="middle" class="font sub">context injected</text>
   </g>
 
-  <g transform="translate(628 306)">
-    <rect x="0" y="0" width="204" height="64" rx="14" fill="#ffffff" stroke="#bbf7d0" stroke-width="1.5"/>
-    <text x="102" y="24" text-anchor="middle" class="font title">Preview Contract</text>
-    <text x="102" y="43" text-anchor="middle" class="font sub">init, add, status, doctor</text>
+  <g transform="translate(634, 376)" filter="url(#shadow)">
+    <rect width="260" height="96" rx="16" fill="#ffffff" stroke="#a7f3d0" stroke-width="1.5"/>
+    <rect x="0" y="0" width="260" height="24" rx="16" fill="#ecfdf5"/>
+    <circle cx="18" cy="12" r="4" fill="#ef4444"/>
+    <circle cx="32" cy="12" r="4" fill="#f59e0b"/>
+    <circle cx="46" cy="12" r="4" fill="#22c55e"/>
+    <text x="72" y="16" class="font" font-size="11" font-weight="850" fill="#065f46">afs status</text>
+    <text x="18" y="42" class="font" font-size="13" font-weight="850" fill="#020617">AgentFS v0.1.0 Preview</text>
+    <rect x="18" y="52" width="70" height="16" rx="8" fill="#dcfce7"/>
+    <text x="53" y="64" text-anchor="middle" class="font" font-size="10" font-weight="850" fill="#166534">ACTIVE</text>
+    <text x="98" y="64" class="font" font-size="11" font-weight="750" fill="#334155">.agent.db mapped</text>
+    <rect x="18" y="74" width="42" height="14" rx="7" fill="#1d4ed8"/>
+    <text x="39" y="84" text-anchor="middle" class="font" font-size="9.5" font-weight="850" fill="#ffffff">init</text>
+    <rect x="66" y="74" width="62" height="14" rx="7" fill="#4f46e5"/>
+    <text x="97" y="84" text-anchor="middle" class="font" font-size="9.5" font-weight="850" fill="#ffffff">add rule</text>
+    <rect x="134" y="74" width="64" height="14" rx="7" fill="#059669"/>
+    <text x="166" y="84" text-anchor="middle" class="font" font-size="9.5" font-weight="850" fill="#ffffff">add hook</text>
+    <rect x="204" y="74" width="38" height="14" rx="7" fill="#0284c7"/>
+    <text x="223" y="84" text-anchor="middle" class="font" font-size="9.5" font-weight="850" fill="#ffffff">doctor</text>
   </g>
+
+  <path d="M236 250L264 250" stroke="#cbd5e1" stroke-width="2" stroke-dasharray="4 4"/>
+  <text x="250" y="242" text-anchor="middle" class="font micro">scan</text>
+
+  <path d="M358 336L358 376" class="dataLine"/>
+  <text x="366" y="360" class="font micro" fill="#4f46e5">indexed writes</text>
+
+  <rect x="68" y="396" width="54" height="20" rx="10" fill="#eff6ff" stroke="#bfdbfe" stroke-width="1"/>
+  <text x="95" y="410" text-anchor="middle" class="font micro" fill="#1d4ed8">&lt; 1ms</text>
+
+  <path d="M380 424L486 424Q504 424 504 406V346Q504 328 522 328H628Q646 328 646 310V282Q646 264 672 264" class="flowTrack"/>
+  <path d="M380 424L486 424Q504 424 504 406V346Q504 328 522 328H628Q646 328 646 310V282Q646 264 672 264" class="flowLine"/>
+
+  <g transform="translate(412, 386)" filter="url(#glow)">
+    <rect width="138" height="30" rx="15" class="pulse-pill" stroke="#bbf7d0" stroke-width="1.5"/>
+    <text x="69" y="19" text-anchor="middle" class="font micro" fill="#166534">PRUNED CONTEXT</text>
+  </g>
+  <text x="646" y="306" text-anchor="middle" class="font micro" fill="#15803d">agent read path</text>
+  <text x="520" y="452" text-anchor="middle" class="font micro" fill="#15803d">directory-scoped context crosses after local pruning</text>
 </svg>
