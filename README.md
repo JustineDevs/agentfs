@@ -22,15 +22,8 @@
 
 ## Sponsor
 
-> [!NOTE]
-> The sponsor embeds below are included in the README source as requested. GitHub may sanitize or suppress iframe rendering in repository markdown views, so the direct sponsor links remain the reliable fallback.
-
 <p align="center">
-  <iframe src="https://github.com/sponsors/JustineDevs/button" title="Sponsor JustineDevs" height="32" width="114" style="border: 0; border-radius: 6px;"></iframe>
-</p>
-
-<p align="center">
-  <iframe src="https://github.com/sponsors/JustineDevs/card" title="Sponsor JustineDevs" height="225" width="600" style="border: 0;"></iframe>
+  <a href="https://github.com/sponsors/JustineDevs"><img src="https://img.shields.io/badge/sponsor-JustineDevs-ea4aaa?style=for-the-badge&logo=githubsponsors&logoColor=white" alt="Sponsor JustineDevs"></a>
 </p>
 
 | Surface | Link | Purpose |
