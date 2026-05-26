@@ -12,7 +12,33 @@
   AgentFS consolidates rules, skills, memory, hooks, and agent lifecycle metadata into one offline-first project file instead of scattering tool-specific text files across the repository root.
 </p>
 
+<p align="center">
+  <a href="https://github.com/JustineDevs/agentfs/releases">Releases</a> ·
+  <a href="https://github.com/JustineDevs/agentfs/tags">Tags</a> ·
+  <a href="https://github.com/users/JustineDevs/packages?repo_name=agentfs">Packages</a>
+</p>
+
 ---
+
+## Sponsor
+
+> [!NOTE]
+> The sponsor embeds below are included in the README source as requested. GitHub may sanitize or suppress iframe rendering in repository markdown views, so the direct sponsor links remain the reliable fallback.
+
+<p align="center">
+  <iframe src="https://github.com/sponsors/JustineDevs/button" title="Sponsor JustineDevs" height="32" width="114" style="border: 0; border-radius: 6px;"></iframe>
+</p>
+
+<p align="center">
+  <iframe src="https://github.com/sponsors/JustineDevs/card" title="Sponsor JustineDevs" height="225" width="600" style="border: 0;"></iframe>
+</p>
+
+| Surface | Link | Purpose |
+| --- | --- | --- |
+| Sponsor profile | `https://github.com/sponsors/JustineDevs` | Support the project directly |
+| Releases | `https://github.com/JustineDevs/agentfs/releases` | Preview binaries and published release notes |
+| Tags | `https://github.com/JustineDevs/agentfs/tags` | Version history and release cut points |
+| Packages | `https://github.com/users/JustineDevs/packages?repo_name=agentfs` | Package and distribution surface tied to the repository |
 
 ## Why AgentFS Exists
 
