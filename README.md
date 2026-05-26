@@ -5,6 +5,7 @@
   <a href="https://github.com/JustineDevs/agentfs"><img src="https://img.shields.io/badge/packages-core%20%7C%20git%20%7C%20sdk-111111?style=for-the-badge" alt="Packages"></a>
   <a href="https://github.com/JustineDevs/agentfs"><img src="https://img.shields.io/badge/stack-rust%20%7C%20typescript%20%7C%20sqlite-111111?style=for-the-badge" alt="Tech Stack"></a>
   <a href="https://agentfs.systems"><img src="https://img.shields.io/badge/website-agentfs.systems-111111?style=for-the-badge" alt="Website"></a>
+  <a href="https://github.com/sponsors/JustineDevs"><img src="https://img.shields.io/badge/sponsor-JustineDevs-ea4aaa?style=for-the-badge&logo=githubsponsors&logoColor=white" alt="Sponsor JustineDevs"></a>
 </p>
 
 <p align="center">
@@ -17,21 +18,6 @@
   <a href="https://github.com/JustineDevs/agentfs/tags">Tags</a> ·
   <a href="https://github.com/users/JustineDevs/packages?repo_name=agentfs">Packages</a>
 </p>
-
----
-
-## Sponsor
-
-<p align="center">
-  <a href="https://github.com/sponsors/JustineDevs"><img src="https://img.shields.io/badge/sponsor-JustineDevs-ea4aaa?style=for-the-badge&logo=githubsponsors&logoColor=white" alt="Sponsor JustineDevs"></a>
-</p>
-
-| Surface | Link | Purpose |
-| --- | --- | --- |
-| Sponsor profile | `https://github.com/sponsors/JustineDevs` | Support the project directly |
-| Releases | `https://github.com/JustineDevs/agentfs/releases` | Preview binaries and published release notes |
-| Tags | `https://github.com/JustineDevs/agentfs/tags` | Version history and release cut points |
-| Packages | `https://github.com/users/JustineDevs/packages?repo_name=agentfs` | Package and distribution surface tied to the repository |
 
 ## Why AgentFS Exists
 
