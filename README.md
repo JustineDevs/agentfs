@@ -9,6 +9,10 @@
 </p>
 
 <p align="center">
+  <img src="./docs/assets/agentfs-product-flow.svg" alt="AgentFS product flow: repository to .agent.db to AI agent context injection" width="900">
+</p>
+
+<p align="center">
   <strong>The open-source system file for AI-native repositories.</strong><br />
   AgentFS consolidates rules, skills, memory, hooks, and agent lifecycle metadata into one offline-first project file instead of scattering tool-specific text files across the repository root.
 </p>
