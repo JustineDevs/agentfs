@@ -9,7 +9,7 @@
 </p>
 
 <p align="center">
-  <img src="./docs/assets/agentfs-product-flow.svg" alt="AgentFS product flow: repository to .agent.db to AI agent context injection" width="900">
+  <img src="./docs/assets/agentfs-product-flow.svg" alt="AgentFS product flow diagram showing repository files, afs runtime, .agent.db, trust boundary, and AI agent context injection" width="960">
 </p>
 
 <p align="center">
