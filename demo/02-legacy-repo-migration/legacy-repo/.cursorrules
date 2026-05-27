@@ -1,0 +1,10 @@
+Always use strict TypeScript.
+Prefer small functions with explicit return types.
+Use React Server Components in web routes unless client interactivity is required.
+Do not add new dependencies without a written reason.
+Never expose internal database types in public API responses.
+Run the package check before proposing a commit.
+Keep generated files out of source control.
+Prefer accessibility-first UI primitives.
+Document security-sensitive changes in the pull request.
+Avoid broad refactors during focused bug fixes.

@@ -20,7 +20,9 @@
 <p align="center">
   <a href="https://github.com/JustineDevs/agentfs/releases">Releases</a> ·
   <a href="https://github.com/JustineDevs/agentfs/tags">Tags</a> ·
-  <a href="https://github.com/users/JustineDevs/packages?repo_name=agentfs">Packages</a>
+  <a href="https://github.com/users/JustineDevs/packages?repo_name=agentfs">Packages</a> ·
+  <a href="./demo">Demos</a> ·
+  <a href="./benchmarks">Benchmarks</a>
 </p>
 
 ## Why AgentFS Exists

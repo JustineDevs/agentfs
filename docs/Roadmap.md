@@ -133,6 +133,20 @@ The roadmap is not only a feature sequence. It is a decision to combine:
 
 into one coherent repository system.
 
+### Implementation references to evaluate
+
+| Reference | What It Changes in the Roadmap |
+| --- | --- |
+| [`sqlite-vec`](https://github.com/asg017/sqlite-vec) / [`sqlite-vss`](https://github.com/asg017/sqlite-vss) | vector search should be modeled as an optional provider boundary in `afs-core`, not hardcoded as one in-house algorithm |
+| [Git LFS](https://github.com/git-lfs/git-lfs/blob/main/docs/spec.md) | clean/smudge filters need pointer stability, idempotency, and clear degraded behavior |
+| [git-annex](https://git-annex.branchable.com/git-annex/) | Git can manage indirect file state, but only if humans understand the indirection |
+| [Git attributes](https://git-scm.com/docs/gitattributes) | merge, diff, clean, and smudge rules are part of the product lifecycle |
+| [Sigstore / Cosign](https://docs.sigstore.dev/cosign/signing/overview/) | Phase 6 should consider OIDC-backed policy signing and transparency, not only per-developer GPG keys |
+| [CoALA](https://arxiv.org/abs/2309.02427) | memory categories should map to established agent-memory vocabulary where possible |
+
+> [!NOTE]
+> These references do not reduce the need for AgentFS. They clarify which parts are prior art and which part is the actual product synthesis: a repository-native substrate combining storage, scope, authority, Git behavior, migration, and human-readable reflection.
+
 ---
 
 ## 5. Technical Problem Landscape
@@ -1005,6 +1019,70 @@ Exit criteria:
 | 4 | safe concurrent use | multi-agent behavior only matters after single-agent correctness |
 | 5 | optimized semantic retrieval | performance tuning follows correctness |
 | 6 | enterprise governance | advanced controls come after the core trust model exists |
+
+### Phase decision register
+
+> [!IMPORTANT]
+> These decisions are implementation blockers, not optional polish. If they are deferred too long, AgentFS risks becoming a fast context lookup tool instead of a durable repository substrate.
+
+#### Phase 1: Local runtime baseline
+
+| Decision | Required Answer | Risk If Ignored |
+| --- | --- | --- |
+| D1: SQLite WAL setup | define `PRAGMA journal_mode=WAL`, checkpoint timing, crash behavior, and how `.agent.db-wal` / `.agent.db-shm` are explained | developers see unexplained sidecar files or encounter unclear recovery behavior |
+| D2: schema migration strategy | embed schema versioning before user files exist | later phases break early `.agent.db` files |
+| D3: scope inheritance resolution | implement path-walking inheritance, override precedence, and parent fallback | scoped rules return incomplete or surprising context |
+| D4: cross-platform hook installation | support Windows behavior and hook chaining with existing systems like Husky | `afs init` breaks existing repo automation |
+| D5: `.gitignore` vs `.gitattributes` | decide whether `.agent.db` is committed or ignored for the preview collaboration model | team sharing and Git integration become incoherent |
+
+#### Phase 2: Git lifecycle integration
+
+| Decision | Required Answer | Risk If Ignored |
+| --- | --- | --- |
+| D6: merge driver correctness | real three-way SQLite merge tests with deterministic conflict handling | one corrupt merge destroys trust in the project |
+| D7: clean/smudge filter stability | filters must be idempotent and handle missing `.agent.db` | Git staging or checkout becomes unsafe |
+| D8: readable diff output | export format must work for local `git diff` and GitHub PR review | reviewers see only binary noise |
+| D9: `.gitattributes` auto-registration | `afs init` must wire merge, diff, and filters with graceful degradation if `afs` is absent | clones without `afs` fail silently or fall back to binary conflicts |
+
+#### Phase 3: Migration and compatibility
+
+| Decision | Required Answer | Risk If Ignored |
+| --- | --- | --- |
+| D10: vendor parsing heuristics | `afs ingest` needs `--dry-run`, preview, and review because source files are freeform | destructive ingest misclassifies real policy |
+| D11: scope assignment during ingest | define how root-level and nested vendor files map to scopes | users inherit rules in the wrong places |
+| D12: IDE compatibility generation | generate or reflect vendor-specific files from `.agent.db` where tools still require them | migration breaks Cursor, Copilot, Claude, or other existing workflows |
+
+#### Phase 4: Multi-agent runtime
+
+| Decision | Required Answer | Risk If Ignored |
+| --- | --- | --- |
+| D13: SQLite concurrent write limits | define busy timeout, retry policy, and write serialization | simultaneous agents see lock errors or silent write loss |
+| D14: scope-level lock granularity | use lock rows with TTL or heartbeat expiry | crashed agents permanently block scopes |
+| D15: append-only event ordering | sequence counter or timestamp strategy with clock-skew awareness | event history becomes non-deterministic |
+
+#### Phase 5: Semantic retrieval
+
+| Decision | Required Answer | Risk If Ignored |
+| --- | --- | --- |
+| D16: embedding storage bloat | use quantization, truncation, or compact embeddings early | `.agent.db` balloons from a system file into an opaque artifact |
+| D17: local embedding dependency | decide tiny local model, optional embeddings, or pluggable providers | the small trusted binary promise collapses under model weight |
+| D18: TTL pruning correctness | prune safely with reference awareness | active memory or referenced logs are deleted accidentally |
+
+#### Phase 6: Enterprise controls
+
+| Decision | Required Answer | Risk If Ignored |
+| --- | --- | --- |
+| D19: signature scheme design | define key distribution, recovery, per-user vs per-repo authority, and possible Sigstore path | "signature" becomes a column without real PKI semantics |
+| D20: remote registry sync conflicts | define authority hierarchy for local overrides vs remote signed policy | policy merges become the same problem as Git merges with higher stakes |
+
+#### Cross-cutting decisions
+
+| Decision | Required Answer | Risk If Ignored |
+| --- | --- | --- |
+| D21: binary mistrust | export and reflection must ship early | users reject `.agent.db` before transparency tooling exists |
+| D22: code-enforced dual-domain boundary | `afs-core` must reject agent writes to user-domain records | documentation-only trust boundary fails under automation |
+| D23: layer boundary discipline | keep `afs-core`, `afs-git`, and CLI UX responsibilities separate | convenience logic leaks across layers and testing becomes brittle |
+| D24: roadmap trap | do not skip Git and migration in favor of speed plus embeddings | AgentFS becomes another partial tool, not a substrate |
 
 ---
 

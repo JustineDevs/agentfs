@@ -1,0 +1,9 @@
+{
+  "name": "agentfs-demo-legacy-repo",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "demo:check": "node -e \"console.log('AgentFS legacy migration demo scaffold is ready')\""
+  }
+}

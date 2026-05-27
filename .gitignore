@@ -24,6 +24,12 @@ tmp/
 temp/
 .cache/
 
+# Benchmark generated output
+benchmarks/results/*
+!benchmarks/results/.gitkeep
+!benchmarks/results/baselines/
+!benchmarks/results/baselines/**
+
 # OS and editor files
 .DS_Store
 Thumbs.db

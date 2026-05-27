@@ -1,0 +1,9 @@
+{
+  "name": "agentfs-demo-agent-collab",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "demo:check": "node -e \"console.log('AgentFS multi-agent coordination demo scaffold is ready')\""
+  }
+}

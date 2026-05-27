@@ -1,0 +1,12 @@
+{
+  "agents": [
+    { "id": "agent-1", "scope": "/src" },
+    { "id": "agent-2", "scope": "/src" },
+    { "id": "agent-3", "scope": "/apps/web" },
+    { "id": "agent-4", "scope": "/apps/web" },
+    { "id": "agent-5", "scope": "/apps/api" },
+    { "id": "agent-6", "scope": "/apps/api" },
+    { "id": "agent-7", "scope": "/docs" },
+    { "id": "agent-8", "scope": "/docs" }
+  ]
+}

@@ -602,6 +602,45 @@ activate compatibility or reflection surfaces if needed
 
 Migration is part of the concept because no standard becomes real unless existing teams can adopt it without losing their work.
 
+### Vendor improvement does not remove fragmentation
+
+> [!WARNING]
+> Better vendor-specific formats do not eliminate fragmentation. They make fragmentation more structured, more durable, and more tempting to normalize.
+
+Each vendor improving its own format does not reduce the underlying problem. It deepens it. A better `.cursor/rules/` system is still a Cursor-only system. A hierarchical `CLAUDE.md` is still a Claude-only file. A more powerful Copilot instruction path is still a Copilot-specific surface.
+
+The more vendors build, the more elaborate the repository root becomes:
+
+```text
+repo/
+├── .cursor/
+│   └── rules/
+│       ├── global.mdc
+│       └── apps-web.mdc
+├── CLAUDE.md
+├── AGENTS.md
+├── devinrules
+├── .github/
+│   └── copilot-instructions.md
+└── skills/
+    ├── review.md
+    └── test.md
+```
+
+That is not a solved problem. That is the problem getting more elaborate.
+
+Each vendor solving the problem only for itself is exactly what creates the need for a single substrate underneath all of them. The correct reading of vendor improvement is therefore:
+
+> the more each vendor invests in its own format, the stronger the case for AgentFS becomes.
+
+The migration story becomes more valuable as each vendor format becomes more structured and therefore more parseable. `afs ingest` can use richer vendor-specific structure as input, but its job is to converge those inputs into one canonical repository substrate.
+
+### The real timing risk
+
+The real risk is not that vendors solve fragmentation independently. The real risk is that teams give up and accept fragmentation as normal before AgentFS ships a credible migration path.
+
+That makes `afs ingest`, readable export, and compatibility generation urgent. They are not nice-to-have features; they are how AgentFS proves that adopting a substrate is less painful than living with permanent vendor sprawl.
+
 ---
 
 ## 19. The Release Vision

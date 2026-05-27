@@ -1,0 +1,13 @@
+{
+  "name": "agentfs-demo-greenfield-monorepo",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "demo:check": "node -e \"console.log('AgentFS greenfield demo scaffold is ready')\""
+  }
+}

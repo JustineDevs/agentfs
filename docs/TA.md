@@ -182,6 +182,66 @@ AgentFS is best understood as a synthesis of:
 - local-first software
 - AI retrieval infrastructure
 
+### Additional prior art that constrains implementation
+
+> [!IMPORTANT]
+> AgentFS should reuse proven infrastructure patterns where possible. The project is novel in how it combines storage, authority, Git lifecycle, and agent memory, not in pretending every primitive must be invented from scratch.
+
+| Prior Art | Relevance to AgentFS | Architectural Consequence |
+| --- | --- | --- |
+| [`sqlite-vec`](https://github.com/asg017/sqlite-vec) / [`sqlite-vss`](https://github.com/asg017/sqlite-vss) | SQLite-native vector search extensions | `crates/afs-core/src/vector/` should evaluate extension-backed vector search before implementing all vector logic internally |
+| [Git LFS](https://github.com/git-lfs/git-lfs/blob/main/docs/spec.md) | clean/smudge filters and pointer-file handling for non-text payloads | `crates/afs-git/` should treat filter idempotency, pointer stability, and graceful fallback as first-order requirements |
+| [git-annex](https://git-annex.branchable.com/git-annex/) | Git-managed indirection for large or externalized file contents | AgentFS can learn from Git-native metadata indirection without copying git-annex's content-addressed file model |
+| [Git attributes](https://git-scm.com/docs/gitattributes) | merge, diff, clean, and smudge behavior | `.gitattributes` is part of the product contract, not incidental setup |
+| [Sigstore / Cosign](https://docs.sigstore.dev/cosign/signing/overview/) | OIDC-backed keyless signing and transparency logs | Phase 6 enterprise controls should consider Sigstore-style identity-backed signatures, not only raw GPG key workflows |
+| [CoALA](https://arxiv.org/abs/2309.02427) | formal memory categories for language agents | AgentFS should map `rule`, `skill`, `hook`, and `memory` to working, episodic, semantic, and procedural memory vocabulary where useful |
+
+#### sqlite-vec / sqlite-vss
+
+AgentFS plans compact semantic vectors stored close to the `.agent.db` record model. `sqlite-vec` and its predecessor `sqlite-vss` prove that vector search can live directly inside SQLite through an extension model. That makes them natural references for `crates/afs-core/src/vector/`.
+
+The design implication is not "depend immediately." The design implication is that AgentFS should define a vector provider boundary:
+
+| Vector Concern | Preview Direction | Later Direction |
+| --- | --- | --- |
+| Storage | SQLite BLOBs or extension tables | quantized vector payloads with provider-specific adapters |
+| Query | exact or approximate local matching | extension-backed ANN where available |
+| Portability | no hard dependency in the minimal core | optional feature flags for vector engines |
+| Size | avoid heavy local models by default | support pluggable embeddings and compression |
+
+#### FUSE and virtual filesystem precedents
+
+The VFS reflection layer planned for `crates/afs-core/src/vfs/` is not speculative in the abstract. FUSE and platform-specific projected filesystem systems have already proven the idea that non-text or indirect storage can be reflected into a human-readable tree.
+
+Git LFS and git-annex are also relevant even though they solve different problems. They show that Git can be extended to handle objects that are not plain text, provided the indirection model is deterministic and reviewable.
+
+#### Sigstore / Cosign
+
+AgentFS currently describes SSH/GPG-style signatures for protected records. That remains a useful local baseline, but enterprise policy delivery should consider Sigstore and Cosign because keyless signing with OIDC identity reduces long-lived key handling and introduces transparency-log auditability.
+
+For AgentFS, that changes the Phase 6 question from:
+
+```text
+who owns the private key?
+```
+
+to:
+
+```text
+which identity provider, transparency log, and verification policy authorize this policy delta?
+```
+
+#### Cognitive Architecture Research: CoALA
+
+The CoALA paper formalizes language-agent memory around working memory, episodic memory, semantic memory, and procedural memory. AgentFS does not need to copy that taxonomy exactly, but it should avoid inventing private names where established vocabulary helps adoption.
+
+| CoALA Vocabulary | AgentFS Mapping |
+| --- | --- |
+| Working memory | active scoped context for the current path or task |
+| Episodic memory | append-only agent logs, snapshots, and event history |
+| Semantic memory | durable facts, rules, and repository knowledge |
+| Procedural memory | skills and hooks that encode operational behavior |
+
 ---
 
 ## 7. Fundamental Concepts and Terms

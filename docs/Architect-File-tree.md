@@ -141,6 +141,26 @@ agentfs/
 │   ├── integration/
 │   ├── security/
 │   └── snapshots/
+├── benchmarks/
+│   ├── harness/
+│   │   ├── runner.rs
+│   │   ├── config.rs
+│   │   └── report.rs
+│   ├── micro/
+│   │   ├── db_read.rs
+│   │   ├── db_write.rs
+│   │   ├── vector_query.rs
+│   │   └── lock_contention.rs
+│   ├── macro/
+│   │   ├── agent_session.rs
+│   │   └── git_lifecycle.rs
+│   ├── fixtures/
+│   │   ├── small_repo/
+│   │   ├── large_repo/
+│   │   └── concurrent_agents/
+│   └── results/
+│       ├── baselines/
+│       └── .gitkeep
 ├── .editorconfig
 ├── .gitignore
 ├── biome.json
@@ -162,6 +182,8 @@ agentfs/
 | `apps/cli` | Operator ergonomics and user-facing flows | Reimplementation of runtime semantics |
 | `packages/*` | Language adapters and consumers | Canonical business logic of the core |
 | `docs/` | Product and architecture truth | Implementation-only decisions hidden from public docs |
+| `tests/` | correctness, regression, and security verification | performance claims |
+| `benchmarks/` | latency, throughput, contention, and workload evidence | product runtime logic |
 
 ### `crates/` owns the trusted core
 
@@ -412,6 +434,34 @@ The VS Code defaults should reinforce repository rules instead of fighting them:
 | `tests/security/` | signature enforcement, forbidden writes, tamper detection |
 | `tests/snapshots/` | diff export and virtual reflection rendering |
 | `tests/fixtures/` | fake repos, broken merge cases, legacy config ingestion samples |
+
+## Benchmark Strategy by Folder
+
+> [!IMPORTANT]
+> Benchmarking is a root-level concern because AgentFS performance claims cross subsystem boundaries. Micro-benchmarks exercise `crates/afs-core/`, while macro-benchmarks exercise the CLI, Git integration, fixtures, and storage together.
+
+| Folder | Focus |
+| --- | --- |
+| `benchmarks/harness/` | orchestration, warmup, teardown, iteration control, and report aggregation |
+| `benchmarks/micro/` | isolated latency and throughput for database, vector, lock, and write paths |
+| `benchmarks/macro/` | end-to-end agent-session and Git-lifecycle workload simulations |
+| `benchmarks/fixtures/` | synthetic repositories, trace inputs, and concurrent-agent scenarios |
+| `benchmarks/results/` | generated benchmark output plus intentional committed baselines |
+
+### Benchmark scope
+
+| Benchmark | Measurement Target | Why It Exists |
+| --- | --- | --- |
+| `micro/db_read.rs` | scoped record lookup latency | validates the `<1ms` local-read ambition |
+| `micro/db_write.rs` | WAL-backed write throughput and checkpoint cost | validates local mutation behavior |
+| `micro/vector_query.rs` | vector lookup latency and memory pressure | validates future semantic retrieval design |
+| `micro/lock_contention.rs` | multi-agent lock acquisition under load | validates concurrency strategy |
+| `macro/agent_session.rs` | full context resolution flow | validates user-visible agent turn cost |
+| `macro/git_lifecycle.rs` | clean/smudge/diff/merge simulation | validates Git lifecycle overhead |
+
+### Result policy
+
+Generated benchmark output is ignored by default. Stable baseline summaries may be committed under `benchmarks/results/baselines/` when they are intentionally used as release evidence.
 
 ## File Ownership Guidance
 
